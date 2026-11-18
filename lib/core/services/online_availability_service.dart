@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,11 @@ class OnlineAvailabilityService {
       final response = await _client
           .get(origin.resolve('/health/ready'))
           .timeout(const Duration(seconds: 10));
-      return response.statusCode >= 200 && response.statusCode < 300;
+      if (response.statusCode != 200) return false;
+      final health = jsonDecode(response.body);
+      return health is Map &&
+          health['status'] == 'ok' &&
+          health['database'] == 'connected';
     } catch (_) {
       return false;
     }

@@ -86,10 +86,8 @@ void main() {
 
     test('online-only mode requires an API and rejects demo auth', () {
       expect(
-        () => AppConfig.fromValues(
-          environment: 'production',
-          onlineOnly: 'true',
-        ),
+        () =>
+            AppConfig.fromValues(environment: 'production', onlineOnly: 'true'),
         throwsFormatException,
       );
       expect(

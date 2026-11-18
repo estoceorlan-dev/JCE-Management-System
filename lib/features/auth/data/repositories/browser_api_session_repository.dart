@@ -80,6 +80,7 @@ class BrowserApiSessionRepository extends NativeApiSessionRepository {
           !(error is RemoteApiException && error.status == 401)) {
         rethrow;
       }
+      if (browserCsrf() == null) rethrow;
       await (_refreshing ??= api
           .request('/v1/auth/refresh', body: {}, headers: _csrf)
           .then<void>((_) {})

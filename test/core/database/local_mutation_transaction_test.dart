@@ -81,7 +81,9 @@ void main() {
     final now = DateTime.utc(2026, 1, 1);
     final result = await guarded.execute<void>(
       businessWrite: (db) async {
-        await db.into(db.organizations).insert(
+        await db
+            .into(db.organizations)
+            .insert(
               OrganizationsCompanion.insert(
                 id: 'org-1',
                 code: 'JCE',

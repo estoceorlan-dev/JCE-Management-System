@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/logger/app_logger.dart';
+import 'core/routing/app_router.dart';
 import 'core/startup/app_startup.dart';
 import 'core/sync/background_sync.dart';
 
@@ -11,6 +12,8 @@ Future<void> bootstrap() async {
   await initializeBackgroundSync();
 
   final container = ProviderContainer();
+  // The web engine resets its default route after the first navigation message.
+  container.read(launchRouteProvider);
   final logger = container.read(appLoggerProvider);
 
   FlutterError.onError = (details) {

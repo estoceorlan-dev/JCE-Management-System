@@ -45,14 +45,8 @@ void main() {
   });
 
   test('keeps production modes platform-specific', () {
-    expect(
-      validate(validConfig(), platform: ReleasePlatform.web),
-      isNotEmpty,
-    );
-    expect(
-      validate(validConfig()..['JCE_ONLINE_ONLY'] = 'true'),
-      isNotEmpty,
-    );
+    expect(validate(validConfig(), platform: ReleasePlatform.web), isNotEmpty);
+    expect(validate(validConfig()..['JCE_ONLINE_ONLY'] = 'true'), isNotEmpty);
   });
   test('retains Windows production gate', () {
     expect(

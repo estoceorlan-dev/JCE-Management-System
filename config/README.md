@@ -3,7 +3,7 @@
 Use `node.local.example.json` for branch-local staging or `node.render.example.json`
 for a separate hosted staging deployment. Copy to a gitignored `*.local.json` and
 replace all placeholders using the trusted operator setup. See
-[Node installation](../docs/node_installation.md). Node is the only supported backend.
+[client deployment](../docs/deployment.md). Node is the only supported backend.
 Old Firebase profiles must be replaced; they are not silently converted.
 
 For production Android/web candidates, use the corresponding production example.

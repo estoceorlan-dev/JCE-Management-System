@@ -7,8 +7,31 @@ import 'package:jce_pos/core/database/database_provider.dart';
 import 'package:jce_pos/core/database/models/outbox_command.dart';
 import 'package:jce_pos/core/widgets/metric_tile.dart';
 import 'package:jce_pos/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:jce_pos/features/dashboard/presentation/providers/dashboard_providers.dart';
 
 void main() {
+  testWidgets('failed metrics do not display a zero transaction count', (
+    tester,
+  ) async {
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          dashboardSummaryProvider.overrideWith(
+            (ref) => Stream.error(StateError('database unavailable')),
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: DashboardPage())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(MetricTile, 'Unavailable'), findsWidgets);
+    expect(find.text('0 completed transactions'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 1));
+  });
   testWidgets('dashboard displays the live pending outbox count', (
     tester,
   ) async {

@@ -87,7 +87,8 @@ class _StartupLoadingApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: const Scaffold(body: Center(child: CircularProgressIndicator())),
+      builder: (_, _) =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
     );
   }
 }

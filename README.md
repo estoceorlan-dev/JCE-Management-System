@@ -1,55 +1,67 @@
-# JCE POS
+# JCE Management System
 
-Offline-first Flutter POS for multiple branches, with a standalone Node.js API
-and PostgreSQL server in the sibling `jce_backend` repository. Windows and Android
-are the POS targets; web is administration only.
+**An offline-first point-of-sale and retail management application built with Flutter.**
 
-Firebase SDKs, adapters, generated connectors, configuration and the embedded
-legacy backend have been removed. `JCE_BACKEND=firebase` is rejected. See the
-[source retirement record](docs/firebase_source_retirement.md) for the recovery
-checkpoint, verification and remaining deployment gates.
+JCE brings checkout, stock control, purchasing, customer management, and branch administration into one application. Native Windows and Android clients keep local transactions in SQLite and synchronize with the [JCE Backend](https://github.com/estoceorlan-dev/JCE-Backend). Web administration provides permission-scoped access through an online-only hosted profile.
 
-## Getting started
+## What it supports
 
-The hosted web administration build is an explicitly online-only profile. Vercel
-serves the bundle and same-origin proxies API traffic to Render; local Windows and
-Android deployments retain the existing offline-first behavior. See the backend
-[Vercel + Render guide](../jce_backend/docs/vercel_render_free_deployment.md).
+- **Point of sale:** product lookup, checkout, shifts, payments, receipt workflows, and sale corrections.
+- **Retail management:** products, CSV imports, inventory, transfers, purchases and suppliers, customers, loyalty, and reports.
+- **Branch administration:** branches, registers, staff, roles, settings, and audit logs.
+- **Offline cashier operation:** per-device PIN enrollment, local checkout, durable queued writes, and signed synchronization that retains the original cashier across restarts.
+- **Hardware and images:** receipt and scanner integrations, print queues, and optional product images that never block core transactions.
 
-Follow [Node installation](docs/node_installation.md) to provision the backend,
-configure the API origin/deployment UUID/public verification keys, and enroll a
-cashier PIN. Copy `config/node.local.example.json` to an ignored
-`config/node.local.json` and replace the placeholders before running:
+## Architecture
 
-```powershell
-flutter pub get
-flutter run -d windows --dart-define-from-file=config/node.local.json
+```mermaid
+flowchart LR
+    UI[Flutter presentation] --> Domain[Domain use cases]
+    Domain --> Repos[Repository contracts]
+    Repos --> Local[(Drift / SQLite)]
+    Local --> Queue[Persistent signed outbox]
+    Queue -->|HTTPS| API[Node.js / Fastify API]
+    API --> DB[(PostgreSQL)]
 ```
 
-For a development-only demo without a server:
+Native business writes and outbox entries commit together locally before synchronization. The API validates permissions and device evidence, applies authoritative transactions, and exposes changes for other clients. Local and hosted installations have distinct deployment identities; pending work never automatically switches databases.
+
+Features follow clean architecture with separate presentation, domain, and data layers. Riverpod provides state and dependency injection, GoRouter handles permission-aware navigation, and shared widgets keep the interface consistent.
+
+| Area | Technology |
+| --- | --- |
+| UI | Flutter, Material, bundled Poppins fonts |
+| State and navigation | Riverpod, GoRouter |
+| Local persistence | Drift / SQLite, transactional outbox |
+| API and identity | HTTPS, native secure storage, P-256 credentials, offline PIN enrollment |
+| Web administration | Same-origin Secure HttpOnly cookies, CSRF protection, online availability gate |
+| Tooling | Flutter tests, Drift code generation, GitHub Actions, Vercel build packaging |
+
+## Try the development demo
+
+Use **Flutter 3.44.9 / Dart 3.12.2**, matching CI and the dependency lockfile. Install the desktop or Android platform tooling for your target.
 
 ```powershell
+flutter pub get --enforce-lockfile
 flutter run -d windows --dart-define=JCE_ENV=development --dart-define=JCE_ENABLE_DEMO_AUTH=true --dart-define=JCE_DEMO_BRANCH_ID=demo-main
 ```
 
-A deployment has one authoritative database. Branch-local operation uses LAN
-connectivity without internet; Render is an independent hosted deployment.
-Clients never connect directly to PostgreSQL. SQLite-first writes and signed
-outbox operations survive outages and restarts. Offline PIN sign-in requires
-prior enrollment on that device and unexpired authorization. Product images are
-optional and never block checkout or core sync.
+The demo is explicitly enabled for development and runs without a backend. For Android, select a connected device instead of `windows`. Windows development requires plugin symlink support (Developer Mode) and the Visual Studio Desktop development with C++ workload.
 
-The canonical bundle identifier is `com.jce.pos`. Linux, macOS and iOS scaffolds
-are retained for evaluation, not approved production targets. Windows production
-remains blocked under [ADR-0001](docs/adr/0001_windows_production_transport.md).
-Physical device, hardware, disconnected-WAN and restore acceptance remain pending.
-Local source cleanup does not approve a production deployment or delete cloud data.
+## Connect to the API
 
-## Development
+Provision the [backend](https://github.com/estoceorlan-dev/JCE-Backend) first, then create an ignored local client profile:
 
-Follow [AGENTS.md](AGENTS.md) and the [backend refactor handoff](docs/backend_refactor.md).
-Features use clean architecture, Riverpod, repository contracts and typed results.
-The dedicated `core/sync` module owns upload, download and conflict resolution.
+```powershell
+Copy-Item config/node.local.example.json config/node.local.json
+# Fill in the trusted HTTPS API origin, deployment UUID,
+# organization code, and public verification keys.
+flutter run -d windows --dart-define-from-file=config/node.local.json
+```
+
+Client profiles contain public configuration only. Database URLs, passwords, signing private keys, and routing secrets stay outside Flutter builds. Follow the [client deployment guide](docs/deployment.md) for TLS trust, cashier enrollment, hosted web builds, and release checks.
+
+## Development and verification
 
 ```powershell
 dart format --output=none --set-exit-if-changed lib test integration_test tool
@@ -57,19 +69,32 @@ flutter analyze
 flutter test
 ```
 
-Backend validation runs in `jce_backend` with its own CI. See that repository's
-README for Node/PostgreSQL commands and local/Render deployment runbooks.
-[Public release configuration](config/README.md) describes production validation.
-Historical `docs/phase_*` and Firebase deployment documents preserve earlier
-implementation evidence; their Firebase deployment commands are retired.
+For intentional model changes, regenerate code with `dart run build_runner build --delete-conflicting-outputs --low-resources-mode`. Released Drift schema snapshots are immutable; schema changes require a new version and migration. Rebuild `web/drift_worker.js` after a Drift upgrade.
 
-Drift schema snapshots remain immutable. For intentional model changes:
+The backend's `npm run test:native-pilot` launches the Windows integration app against a disposable PostgreSQL/API fixture. Set `JCE_FLUTTER_EXECUTABLE` to the pinned Flutter executable first. It tests persistence and replay across app processes; physical hardware acceptance remains separate.
 
-```powershell
-dart run build_runner build --delete-conflicting-outputs --low-resources-mode
+## Repository layout
+
+```text
+lib/core/              configuration, routing, storage, sync, shared services
+lib/features/          presentation, domain, and data by business feature
+lib/shared/            shared models and domain types
+assets/                offline data, bundled fonts, and image assets
+config/                public client profile examples
+test/                  unit, widget, repository, and contract tests
+integration_test/      native process-restart scenarios
+tool/                  configuration validation, code and deployment tooling
+docs/                  architecture and deployment documentation
 ```
 
-Increment the released schema version and use `dart run drift_dev make-migrations`
-for database changes. This source retirement leaves SQLite schema 20 unchanged.
-After a Drift upgrade regenerate `web/drift_worker.js` with
-`dart compile js web/drift_worker.dart -O4 -o web/drift_worker.js`.
+## Documentation
+
+- [Frontend architecture](docs/architecture.md)
+- [Client deployment and environment configuration](docs/deployment.md)
+- [Public release profiles](config/README.md)
+- [Windows production transport decision](docs/adr/0001_windows_production_transport.md)
+- [Backend architecture and deployment](https://github.com/estoceorlan-dev/JCE-Backend#documentation)
+
+## Project status
+
+Windows and Android are the native POS targets; web is administration only, with browser checkout disabled. The current hosted web profile requires API availability. Windows production startup remains blocked until the [transport acceptance requirements](docs/adr/0001_windows_production_transport.md) are met. Hosted staging, recovery, signed installers, and physical till, scanner, printer, and cash-drawer checks remain release acceptance work. Linux, macOS, and iOS scaffolds are retained for evaluation.

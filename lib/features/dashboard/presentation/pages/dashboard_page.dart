@@ -15,10 +15,16 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final syncState = ref.watch(syncStateProvider).asData?.value;
-    final summary = ref.watch(dashboardSummaryProvider).asData?.value;
+    final sync = ref.watch(syncStateProvider);
+    final syncState = sync.asData?.value;
+    final metrics = ref.watch(dashboardSummaryProvider);
+    final summary = metrics.asData?.value;
+    final missingMetric = metrics.hasError ? 'Unavailable' : '…';
+    final syncMessage = sync.hasError
+        ? 'Sync status unavailable'
+        : 'Loading sync status…';
     final pending = syncState == null
-        ? '…'
+        ? (sync.hasError ? 'Unavailable' : '…')
         : (syncState.pendingChanges +
                   syncState.retryingChanges +
                   syncState.failedChanges +
@@ -59,28 +65,30 @@ class DashboardPage extends ConsumerWidget {
                       MetricTile(
                         title: 'Today sales',
                         value: summary == null
-                            ? '…'
+                            ? missingMetric
                             : Formatters.currencyMinor(summary.netSalesMinor),
-                        detail:
-                            '${summary?.completedSales ?? 0} completed transactions',
+                        detail: summary == null
+                            ? 'Completed transactions'
+                            : '${summary.completedSales} completed transactions',
                         icon: Icons.payments_outlined,
                       ),
                       MetricTile(
                         title: 'Open carts',
-                        value: summary?.openCarts.toString() ?? '…',
+                        value: summary?.openCarts.toString() ?? missingMetric,
                         detail: 'Current register activity',
                         icon: Icons.shopping_bag_outlined,
                       ),
                       MetricTile(
                         title: 'Low stock',
-                        value: summary?.lowStockItems.toString() ?? '…',
+                        value:
+                            summary?.lowStockItems.toString() ?? missingMetric,
                         detail: 'Branch inventory thresholds',
                         icon: Icons.warning_amber_outlined,
                       ),
                       MetricTile(
                         title: 'Gross profit estimate',
                         value: summary == null
-                            ? '…'
+                            ? missingMetric
                             : Formatters.currencyMinor(
                                 summary.grossProfitMinor,
                               ),
@@ -90,9 +98,10 @@ class DashboardPage extends ConsumerWidget {
                       MetricTile(
                         title: 'Pending sync',
                         value: pending,
-                        detail:
-                            syncState?.message ??
-                            'Local changes waiting for the backend',
+                        detail: syncState == null
+                            ? syncMessage
+                            : syncState.message ??
+                                  'Local changes waiting for the backend',
                         icon: Icons.cloud_sync_outlined,
                       ),
                     ],
@@ -110,10 +119,12 @@ class DashboardPage extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           Text(
-                            'Pending ${syncState?.pendingChanges ?? 0}  •  '
-                            'Retrying ${syncState?.retryingChanges ?? 0}  •  '
-                            'Failed ${syncState?.failedChanges ?? 0}  •  '
-                            'Conflicts ${syncState?.conflicts ?? 0}',
+                            syncState == null
+                                ? syncMessage
+                                : 'Pending ${syncState.pendingChanges}  •  '
+                                      'Retrying ${syncState.retryingChanges}  •  '
+                                      'Failed ${syncState.failedChanges}  •  '
+                                      'Conflicts ${syncState.conflicts}',
                             style: theme.textTheme.bodyMedium,
                           ),
                         ],

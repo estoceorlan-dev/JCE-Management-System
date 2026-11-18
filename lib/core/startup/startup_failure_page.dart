@@ -18,7 +18,7 @@ class StartupFailurePage extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: _StartupFailureContent(onRetry: onRetry),
+      builder: (_, _) => _StartupFailureContent(onRetry: onRetry),
     );
   }
 }

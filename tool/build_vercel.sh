@@ -28,19 +28,14 @@ if [[ ! -x "$flutter_root/bin/flutter" ]]; then
 fi
 
 "$flutter_root/bin/flutter" config --no-analytics >/dev/null
-"$flutter_root/bin/flutter" pub get
+"$flutter_root/bin/flutter" pub get --enforce-lockfile
+profile_dir="$(mktemp -d .dart_tool/vercel-profile.XXXXXXXX)"
+trap 'rm -f "$profile_dir/public.json"; rmdir "$profile_dir"' EXIT
+"$flutter_root/bin/dart" run tool/hosted_web_profile.dart "$profile_dir/public.json"
 "$flutter_root/bin/flutter" build web \
+  --no-pub \
   --release \
   --no-web-resources-cdn \
   --no-source-maps \
-  --dart-define=JCE_BACKEND=node \
-  --dart-define=JCE_ENV=production \
-  --dart-define=JCE_ENABLE_DEMO_AUTH=false \
-  --dart-define=JCE_ENABLE_DIAGNOSTICS=false \
-  --dart-define=JCE_ONLINE_ONLY=true \
-  "--dart-define=JCE_API_BASE_URL=$JCE_PUBLIC_ORIGIN" \
-  "--dart-define=JCE_DEPLOYMENT_ID=$JCE_DEPLOYMENT_ID" \
-  "--dart-define=JCE_ORGANIZATION_CODE=$JCE_ORGANIZATION_CODE" \
-  "--dart-define=JCE_OFFLINE_VERIFICATION_KEYS=$JCE_OFFLINE_VERIFICATION_KEYS" \
-  "--dart-define=JCE_APPROVED_PRODUCTION_DEPLOYMENT_ID=$JCE_APPROVED_PRODUCTION_DEPLOYMENT_ID" \
-  --dart-define=JCE_ALLOW_HTTP_LOOPBACK=false
+  "--dart-define-from-file=$profile_dir/public.json" \
+  "--dart-define=JCE_APPROVED_PRODUCTION_DEPLOYMENT_ID=$JCE_APPROVED_PRODUCTION_DEPLOYMENT_ID"

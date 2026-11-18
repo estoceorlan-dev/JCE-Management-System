@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jce_pos/core/routing/app_navigation_item.dart';
 import 'package:jce_pos/core/routing/app_route.dart';
+import 'package:jce_pos/core/routing/app_router.dart';
 import 'package:jce_pos/core/widgets/mobile_bottom_navigation.dart';
 import 'package:jce_pos/features/auth/domain/entities/auth_session.dart';
+import 'package:jce_pos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:jce_pos/features/branches/domain/entities/branch_profile.dart';
 import 'package:jce_pos/features/branches/presentation/pages/branch_details_page.dart';
 import 'package:jce_pos/features/branches/presentation/pages/branches_page.dart';
@@ -19,6 +23,41 @@ import 'package:jce_pos/shared/models/permission.dart';
 import 'package:jce_pos/shared/models/user_account_status.dart';
 
 void main() {
+  testWidgets(
+    'branch link waits for the restored session and checks its permissions',
+    (tester) async {
+      await tester.pumpWidget(const SizedBox());
+      final context = tester.element(find.byType(SizedBox));
+      for (final (session, expected) in [
+        (_session({AppPermission.manageBranches}), null),
+        (_session({AppPermission.viewDashboard}), AppRoute.dashboard.path),
+        (null, AppRoute.auth.path),
+      ]) {
+        final restored = Completer<AuthSession?>();
+        final container = ProviderContainer(
+          overrides: [
+            authControllerProvider.overrideWith(
+              () => _RestoringController(restored.future),
+            ),
+          ],
+        );
+        try {
+          final routes = container.read(appRouterProvider).configuration;
+          final match = routes.findMatch(
+            Uri.parse('/branches/target?tab=registers'),
+          );
+          final destination = routes.topRedirect(
+            context,
+            routes.buildTopLevelGoRouterState(match),
+          );
+          restored.complete(session);
+          expect(await destination, expected);
+        } finally {
+          container.dispose();
+        }
+      }
+    },
+  );
   test(
     'limited administrators have explicit routes without cashier access',
     () {
@@ -161,6 +200,14 @@ void main() {
       );
     }
   }
+}
+
+class _RestoringController extends AuthController {
+  _RestoringController(this.session);
+  final Future<AuthSession?> session;
+
+  @override
+  Future<AuthSession?> build() => session;
 }
 
 AuthSession _session(

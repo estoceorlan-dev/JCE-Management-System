@@ -24,24 +24,32 @@ import '../config/production_platform_policy.dart';
 import 'app_navigation_item.dart';
 import 'app_route.dart';
 
+final launchRouteProvider = Provider<String>(
+  (ref) => WidgetsBinding.instance.platformDispatcher.defaultRouteName,
+);
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier();
   final platformPolicy = ref.watch(productionPlatformPolicyProvider);
   ref.listen(authControllerProvider, (_, _) => refreshNotifier.refresh());
 
-  final initialSession = ref.read(authControllerProvider).asData?.value;
   final router = GoRouter(
-    initialLocation: initialSession == null
-        ? AppRoute.auth.path
-        : AppRoute.dashboard.path,
+    initialLocation: ref.watch(launchRouteProvider),
+    overridePlatformDefaultLocation: true,
     refreshListenable: refreshNotifier,
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final currentUser = ref.read(authControllerProvider);
-      final session = currentUser.asData?.value;
+      var session = currentUser.asData?.value;
       final isAuthRoute = state.matchedLocation == AppRoute.auth.path;
 
       if (currentUser.isLoading) {
-        return isAuthRoute ? null : AppRoute.auth.path;
+        if (isAuthRoute) return null;
+        // Keep the requested URL while the cookie or native session is restored.
+        try {
+          session = await ref.read(authControllerProvider.future);
+        } catch (_) {
+          return AppRoute.auth.path;
+        }
       }
 
       if (session == null) {

@@ -1,68 +1,51 @@
 # ADR-0001: Windows production transport
 
-Date: 2026-09-15  
-Status: accepted as an interim fail-closed safety decision; business launch
-approval remains pending  
-Decision owner: PENDING
+Original decision: 15 September 2026.
+Status: accepted interim restriction; Windows production remains disabled.
 
 ## Context
 
-JCE POS originally identifies Windows as the primary desktop POS target and uses
-FlutterFire Authentication, callable Functions, and Storage. Current official
-Firebase Flutter setup guidance cautions that Firebase on Windows is not intended
-for production use cases. A shared secret embedded in a desktop application would
-not be an acceptable replacement, and Android/web App Check providers do not by
-themselves establish a production Windows trust boundary.
+This restriction originated when the desktop application used Firebase adapters.
+The active application now uses the standalone Node.js/PostgreSQL API with HTTPS,
+per-installation P-256 keys, server authorization, and signed offline commands.
+Replacing the transport did not complete native device and operational acceptance
+or authorize removal of the production gate.
 
 ## Decision
 
-The repository will fail closed for `JCE_ENV=production` on Windows. Windows stays
-enabled in development and staging for ongoing pilot and hardware work.
+Configuration validation and startup reject `JCE_ENV=production` on Windows.
+Development and staging remain available for integration, installation, and
+hardware testing. Web administration keeps checkout disabled. Android production
+candidates require their own signing, device, security, and recovery acceptance.
 
-The initial production candidate is:
-
-- Android for POS/operational workflows;
-- web for administration/operational fallback, with the POS route disabled.
-
-Phase 3 will use Play Integrity for Android App Check and reCAPTCHA Enterprise
-for web App Check, first in metrics mode and then enforced after staging
-acceptance. These providers do not remove the need for Auth, RBAC, request
-validation, idempotency, rate limits, or the Windows-specific decision above.
-
-Production Windows can be enabled only by a later ADR after one of these paths is
-implemented and accepted:
-
-1. a vendor-supported Firebase/Flutter Windows production stack with an accepted
-   attestation model; or
-2. a supported HTTPS/API transport behind the existing repository interfaces,
-   server-side Firebase/Identity Platform token verification, and unique revocable
-   per-installation asymmetric credentials protected by Windows TPM/CNG where
-   available.
-
-No path may place a shared API secret, service-account credential, database
-credential, or signing private key in the Windows binary.
+Enable Windows production only through a superseding architecture decision backed
+by the evidence below. This documentation cleanup does not supersede the decision
+or change runtime policy.
 
 ## Required supersession evidence
 
-- vendor/platform support review dated for the intended release;
-- threat model covering token storage, device enrollment, replay, theft, cloning,
-  revocation, rotation, clock skew, offline operation, and recovery;
-- clean-architecture transport implementation and shared contract tests;
-- server authorization remains authoritative for organization/branch/permission;
-- per-request device proof bound to method, path, body digest, nonce, and timestamp;
-- replay storage/expiry and emergency device revocation;
-- penetration, abuse, load, offline, two-device, upgrade, and rollback evidence;
-- security, operations, and release-owner approval.
+- Platform and dependency support review for the intended release.
+- Threat model for key storage, enrollment, replay, theft, cloning, revocation,
+  rotation, clock skew, offline authority, and recovery.
+- Protected unique per-installation asymmetric credentials; evaluate TPM/CNG
+  protection on supported Windows hardware. No shared application secret,
+  database credential, or server signing private key in the binary.
+- Contract-tested HTTPS transport with authoritative organization, branch, and
+  permission checks on the server.
+- Device proofs bound to method, path, body digest, nonce, and timestamp, with
+  replay expiry and emergency revocation.
+- Signed installer, clean installation, OS reboot, upgrade, and rollback checks.
+- Physical scanner, printer, receipt, and cash-drawer acceptance on the target till.
+- Offline checkout and restart, two-device WAN-disconnected operation, lost-response
+  replay, revocation, load/abuse checks, and backup/restore reconciliation.
+- Security, operations, and release-owner approval recorded with the new decision.
 
 ## Consequences
 
-- A production Windows build now stops on the controlled startup failure screen.
-- Production configuration validation rejects `--platform=windows`.
-- The production web navigation omits and rejects the POS route.
-- Existing Windows staging behavior is unchanged.
-- This reduces first-release platform scope but avoids representing a beta/unsupported
-  dependency path as production-ready.
+The production release validator rejects Windows and startup displays a controlled
+failure screen. Staging remains available, including the automated process-restart
+pilot. Passing automated tests or building a staging executable does not remove
+the production restriction.
 
-## Reference
-
-- [Firebase for Flutter platform support](https://firebase.google.com/docs/flutter/setup)
+See [client architecture](../architecture.md) and [deployment](../deployment.md)
+for current transport behavior and acceptance procedures.

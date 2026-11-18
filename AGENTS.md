@@ -42,7 +42,7 @@ The application must function even without internet access.
 PostgreSQL, accessed through the standalone Node.js API in `jce_backend`.
 
 Local production uses one branch server over Wi-Fi/Ethernet without requiring
-internet. Hosted production uses Render Web Service and Render Postgres. Each
+internet. Hosted deployments use Render Web Service with Render Postgres or Neon. Each
 deployment has one authoritative database; do not automatically fail over or
 replicate between independent local and cloud databases.
 
@@ -67,14 +67,12 @@ No feature should depend solely on an active internet connection.
 The Flutter client must not connect directly to PostgreSQL or contain database
 credentials. Retain SQLite-first writes and the dedicated synchronization queue.
 
-## Backend migration status
+## Backend and release boundaries
 
-The accepted migration plan is `jce_backend/docs/architecture_refactor_plan.md`.
-Phase 7 source cleanup removes Firebase runtime adapters at the user's explicit
-request. A verified source archive and Git bundles preserve rollback evidence;
-see `jce_pos/docs/firebase_source_retirement.md`. Physical device and hosted
-acceptance remain pending. Retain production platform gates; source cleanup does
-not authorize a production release or cloud resource deletion.
+The current architecture is documented in `docs/architecture.md` and the backend
+repository's `docs/architecture.md`. Firebase runtime adapters are retired.
+Physical device and hosted acceptance remain required. Retain production platform
+gates; source cleanup does not authorize production or cloud resource deletion.
 
 Target clients are Windows and Android POS, with web administration. Offline
 cashier sign-in uses prior per-device PIN enrollment and expiring authorization.
