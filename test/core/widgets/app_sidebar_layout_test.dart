@@ -129,12 +129,21 @@ void main() {
     expect(bodyLeft(tester), AppSpacing.collapsedSidebarWidth);
     expect(find.text('Unsaved sale'), findsOneWidget);
     expect(find.text('Logout').hitTestable(), findsNothing);
-    expect(find.byType(SidebarToggle), findsOneWidget);
+    expect(find.byType(SidebarToggle), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byTooltip('Expand sidebar'),
+        matching: find.image(const AssetImage('assets/images/jce_logo.jpg')),
+      ),
+      findsOneWidget,
+    );
     expect(find.byTooltip('POS').hitTestable(), findsOneWidget);
     expect(find.byTooltip('Settings').hitTestable(), findsOneWidget);
     expect(find.byTooltip('Logout').hitTestable(), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Expand sidebar'));
+    await tester.tap(
+      find.image(const AssetImage('assets/images/jce_logo.jpg')),
+    );
     await tester.pumpAndSettle();
     expect(bodyLeft(tester), AppSpacing.sidebarWidth);
     expect(find.text('Unsaved sale'), findsOneWidget);

@@ -9,6 +9,7 @@ class SidebarLogo extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.trailing,
+    this.onExpand,
     this.compact = false,
   });
 
@@ -16,6 +17,7 @@ class SidebarLogo extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget? trailing;
+  final VoidCallback? onExpand;
   final bool compact;
 
   @override
@@ -41,13 +43,17 @@ class SidebarLogo extends StatelessWidget {
           AppSpacing.md,
           AppSpacing.lg,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (trailing != null) trailing!,
-            if (trailing != null) const SizedBox(height: AppSpacing.sm),
-            logo,
-          ],
+        child: Center(
+          child: IconButton(
+            tooltip: 'Expand sidebar',
+            onPressed: onExpand,
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: EdgeInsets.zero,
+              shape: const CircleBorder(),
+            ),
+            icon: logo,
+          ),
         ),
       );
     }

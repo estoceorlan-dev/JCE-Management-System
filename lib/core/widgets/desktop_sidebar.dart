@@ -72,6 +72,7 @@ class DesktopSidebar extends StatelessWidget {
                   title: AppConstants.appName,
                   subtitle: 'Dry Goods Trading',
                   compact: compact,
+                  onExpand: onToggle,
                   trailing: SidebarToggle(
                     expanded: !compact,
                     onPressed: onToggle,
