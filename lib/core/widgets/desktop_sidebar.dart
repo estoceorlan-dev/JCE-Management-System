@@ -23,6 +23,7 @@ class DesktopSidebar extends StatelessWidget {
     required this.onToggle,
     required this.collapseToRail,
     this.collapsed = false,
+    this.onChangePassword,
   });
 
   static const _logoAsset = 'assets/images/jce_logo.jpg';
@@ -36,6 +37,7 @@ class DesktopSidebar extends StatelessWidget {
   final VoidCallback onToggle;
   final bool collapseToRail;
   final bool collapsed;
+  final VoidCallback? onChangePassword;
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +147,13 @@ class DesktopSidebar extends StatelessWidget {
                         children: [
                           SidebarUserPanel(session: session, compact: compact),
                           const SizedBox(height: AppSpacing.md),
+                          if (onChangePassword != null)
+                            SidebarAction(
+                              compact: compact,
+                              label: 'Change password',
+                              icon: Icons.key_outlined,
+                              onTap: onChangePassword!,
+                            ),
                           if (canOpenSettings) ...[
                             SidebarAction(
                               compact: compact,

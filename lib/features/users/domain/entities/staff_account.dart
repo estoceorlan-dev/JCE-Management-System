@@ -54,7 +54,9 @@ class StaffAccount {
 }
 
 class StaffDraft {
+  final String? initialPassword;
   const StaffDraft({
+    this.initialPassword,
     required this.email,
     required this.displayName,
     required this.assignments,

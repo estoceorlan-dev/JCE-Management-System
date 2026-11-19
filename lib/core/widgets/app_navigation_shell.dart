@@ -1,3 +1,4 @@
+import '../../features/auth/presentation/widgets/change_password_dialog.dart';
 import 'package:flutter/foundation.dart';
 import '../../features/auth/presentation/widgets/offline_pin_panel.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,21 @@ class AppNavigationShell extends ConsumerWidget {
           if (!isDesktop) toggle();
           _goToRoute(AppRoute.settings);
         },
+        onChangePassword: ref.watch(appConfigProvider).enableDemoAuth
+            ? null
+            : () async {
+                if (!isDesktop) toggle();
+                final changed = await showDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const ChangePasswordDialog(),
+                );
+                if (changed == true && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password changed.')),
+                  );
+                }
+              },
         onLogout: () {
           if (!isDesktop) toggle();
           _confirmLogout(context, ref);

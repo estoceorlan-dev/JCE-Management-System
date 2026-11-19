@@ -14,6 +14,26 @@ import 'package:jce_pos/shared/models/permission.dart';
 import 'package:jce_pos/shared/models/user_account_status.dart';
 
 void main() {
+  testWidgets('admin can enter or generate a starting password', (
+    tester,
+  ) async {
+    await _open(tester);
+    await tester.tap(find.text('Create staff'));
+    await tester.pumpAndSettle();
+    final field = find.widgetWithText(TextFormField, 'Starting password');
+    await tester.enterText(field, 'chosen-staff-password');
+    expect(
+      tester.widget<TextFormField>(field).controller!.text,
+      'chosen-staff-password',
+    );
+    await tester.tap(find.text('Generate password'));
+    await tester.pump();
+    final generated = tester.widget<TextFormField>(field).controller!.text;
+    expect(generated.length, 20);
+    expect(generated, isNot('chosen-staff-password'));
+    expect(find.text('Create account'), findsOneWidget);
+  });
+
   testWidgets('branch and role filters combine and clear; pending is visible', (
     tester,
   ) async {

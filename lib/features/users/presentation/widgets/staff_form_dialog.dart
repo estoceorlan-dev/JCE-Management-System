@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_spacing.dart';
@@ -21,6 +22,8 @@ class StaffFormDialog extends StatefulWidget {
 }
 
 class _StaffFormDialogState extends State<StaffFormDialog> {
+  final _password = TextEditingController();
+  bool _showPassword = false;
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
   late final TextEditingController _email;
@@ -48,6 +51,7 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
 
   @override
   void dispose() {
+    _password.dispose();
     _name.dispose();
     _email.dispose();
     super.dispose();
@@ -57,7 +61,7 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        widget.account == null ? 'Invite staff' : 'Edit staff account',
+        widget.account == null ? 'Create staff account' : 'Edit staff account',
       ),
       content: SizedBox(
         width: 620,
@@ -88,6 +92,48 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                       ? 'Enter a valid email address.'
                       : null,
                 ),
+                if (widget.account == null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  TextFormField(
+                    controller: _password,
+                    obscureText: !_showPassword,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    maxLength: 128,
+                    decoration: InputDecoration(
+                      labelText: 'Starting password',
+                      helperText: 'Give this password to the staff member.',
+                      suffixIcon: IconButton(
+                        tooltip: _showPassword
+                            ? 'Hide password'
+                            : 'Show password',
+                        icon: Icon(
+                          _showPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () =>
+                            setState(() => _showPassword = !_showPassword),
+                      ),
+                    ),
+                    validator: (v) => (v?.length ?? 0) < 12
+                        ? 'Use at least 12 characters.'
+                        : null,
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      const alphabet =
+                          'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+                      final random = Random.secure();
+                      _password.text = List.generate(
+                        20,
+                        (_) => alphabet[random.nextInt(alphabet.length)],
+                      ).join();
+                      setState(() => _showPassword = true);
+                    },
+                    child: const Text('Generate password'),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xl),
                 Text(
                   'Role assignments',
@@ -179,7 +225,9 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
                   label: const Text('Add role'),
                 ),
                 if (widget.roles.isEmpty)
-                  const Text('Create an active role before inviting staff.'),
+                  const Text(
+                    'Create an active role before creating staff accounts.',
+                  ),
               ],
             ),
           ),
@@ -193,7 +241,7 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
         FilledButton(
           onPressed: widget.roles.isEmpty ? null : _submit,
           child: Text(
-            widget.account == null ? 'Save invitation' : 'Save changes',
+            widget.account == null ? 'Create account' : 'Save changes',
           ),
         ),
       ],
@@ -208,6 +256,7 @@ class _StaffFormDialogState extends State<StaffFormDialog> {
         email: _email.text,
         displayName: _name.text,
         assignments: _assignments,
+        initialPassword: widget.account == null ? _password.text : null,
       ),
     );
   }

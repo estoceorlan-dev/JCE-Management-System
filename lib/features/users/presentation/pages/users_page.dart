@@ -88,8 +88,7 @@ class _UsersPageState extends ConsumerState<UsersPage>
           ),
           child: AppPageHeader(
             title: 'Staff & Access',
-            description:
-                'Invite staff, control account status, branch assignments, roles, and permissions.',
+            description: 'Manage accounts, roles, and branch access.',
             action: ListenableBuilder(
               listenable: _tabs,
               builder: (context, _) => FilledButton.icon(
@@ -101,7 +100,7 @@ class _UsersPageState extends ConsumerState<UsersPage>
                     ? () => _openStaffDialog()
                     : () => _openRoleDialog(),
                 icon: const Icon(Icons.add),
-                label: Text(_tabs.index == 0 ? 'Invite staff' : 'New role'),
+                label: Text(_tabs.index == 0 ? 'Create staff' : 'New role'),
               ),
             ),
           ),
@@ -474,7 +473,34 @@ class _UsersPageState extends ConsumerState<UsersPage>
     final session = ref.read(activeUserAdminSessionProvider);
     final useCase = ref.read(manageStaffUseCaseProvider);
     if (account == null) {
-      await _run(() => useCase.invite(session: session, draft: result));
+      setState(() => _busy = true);
+      try {
+        final response = await ref.read(staffCredentialsProvider).submit(
+          '/v1/staff',
+          {
+            'email': result.email.trim(),
+            'displayName': result.displayName.trim(),
+            'password': result.initialPassword!,
+            'assignments': [
+              for (final a in result.assignments)
+                {'roleId': a.roleId, 'branchId': a.branchId},
+            ],
+          },
+        );
+        if (!mounted) return;
+        if (response.failureOrNull case final failure?) {
+          _showFailure(failure);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created. Staff can sign in now.'),
+            ),
+          );
+          await ref.read(syncStateProvider.notifier).synchronize();
+        }
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
       return;
     }
     final profileResult = await useCase.update(

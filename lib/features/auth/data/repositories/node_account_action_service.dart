@@ -7,6 +7,22 @@ import 'native_api_session_repository.dart';
 class NodeAccountActionService implements AccountActionService {
   const NodeAccountActionService(this.sessions);
   final NativeApiSessionRepository sessions;
+  Future<Result<void, Failure>> submit(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      await sessions.authenticated(path, body: body);
+      return const Result.success(null);
+    } on Failure catch (failure) {
+      return Result.failure(failure);
+    } catch (_) {
+      return const Result.failure(
+        UnexpectedFailure('Could not reach the account service.'),
+      );
+    }
+  }
+
   @override
   Future<Result<IssuedAccountAction, Failure>> issue({
     required String userId,
