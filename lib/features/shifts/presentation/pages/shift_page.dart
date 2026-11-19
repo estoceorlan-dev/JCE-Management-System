@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_breakpoints.dart';
@@ -67,6 +68,9 @@ class ShiftPage extends ConsumerWidget {
                       deviceIdAsync.value != null &&
                       activeShift == null &&
                       registerClaim?.status != RegisterClaimStatus.rejected &&
+                      (!kIsWeb ||
+                          registerClaim?.status !=
+                              RegisterClaimStatus.provisional) &&
                       registers.any(
                         (register) =>
                             register.isActive &&
@@ -236,7 +240,9 @@ class ShiftPage extends ConsumerWidget {
       onSuccess: (_) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${register.name} claimed provisionally. It will be confirmed in the background.',
+            kIsWeb
+                ? '${register.name} is ready for this browser.'
+                : '${register.name} claimed provisionally. It will be confirmed in the background.',
           ),
         ),
       ),

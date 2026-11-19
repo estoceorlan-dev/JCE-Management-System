@@ -10,6 +10,7 @@ import '../../domain/repositories/device_registration_repository.dart';
 import '../datasources/access_local_data_source.dart';
 import '../dto/node_access_mapper.dart';
 import 'native_api_session_repository.dart';
+import 'browser_installation_repository.dart';
 
 class NodeAuthRepository implements AuthRepository {
   NodeAuthRepository(
@@ -60,7 +61,13 @@ class NodeAuthRepository implements AuthRepository {
       branchId: branchId ?? boundBranch,
     );
     await devices.register(session);
-    await actor.activateOnline(session);
+    final installation = devices;
+    await actor.activateOnline(
+      session,
+      browserDeviceId: installation is BrowserInstallationRepository
+          ? installation.terminalId
+          : null,
+    );
     await local.replaceProfile(session.user);
     await sessions.records.transact((state) async {
       final profiles = Map<String, dynamic>.from(

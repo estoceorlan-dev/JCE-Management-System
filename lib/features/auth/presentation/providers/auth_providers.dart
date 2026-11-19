@@ -46,7 +46,10 @@ final deviceRegistrationRepositoryProvider =
         return const DemoDeviceRegistrationRepository();
       }
       if (kIsWeb) {
-        return BrowserInstallationRepository(ref.watch(metadataDaoProvider));
+        return BrowserInstallationRepository(
+          ref.watch(metadataDaoProvider),
+          ref.watch(nativeApiSessionRepositoryProvider),
+        );
       }
       return NodeDeviceRegistrationRepository(
         ref.watch(nativeApiSessionRepositoryProvider),

@@ -2,7 +2,7 @@
 
 **An offline-first point-of-sale and retail management application built with Flutter.**
 
-JCE brings checkout, stock control, purchasing, customer management, and branch administration into one application. Native Windows and Android clients keep local transactions in SQLite and synchronize with the [JCE Backend](https://github.com/estoceorlan-dev/JCE-Backend). Web administration provides permission-scoped access through an online-only hosted profile.
+JCE brings checkout, stock control, purchasing, customer management, and branch administration into one application. Native Windows and Android clients keep local transactions in SQLite and synchronize with the [JCE Backend](https://github.com/estoceorlan-dev/JCE-Backend). The hosted web app supports online checkout and permission-scoped administration.
 
 ## What it supports
 
@@ -34,7 +34,7 @@ Features follow clean architecture with separate presentation, domain, and data 
 | State and navigation | Riverpod, GoRouter |
 | Local persistence | Drift / SQLite, transactional outbox |
 | API and identity | HTTPS, native secure storage, P-256 credentials, offline PIN enrollment |
-| Web administration | Same-origin Secure HttpOnly cookies, CSRF protection, online availability gate |
+| Web POS and administration | Same-origin Secure HttpOnly cookies, CSRF protection, online availability gate |
 | Tooling | Flutter tests, Drift code generation, GitHub Actions, Vercel build packaging |
 
 ## Try the development demo
@@ -97,4 +97,4 @@ docs/                  architecture and deployment documentation
 
 ## Project status
 
-Windows and Android are the native POS targets; web is administration only, with browser checkout disabled. The current hosted web profile requires API availability. Windows production startup remains blocked until the [transport acceptance requirements](docs/adr/0001_windows_production_transport.md) are met. Hosted staging, recovery, signed installers, and physical till, scanner, printer, and cash-drawer checks remain release acceptance work. Linux, macOS, and iOS scaffolds are retained for evaluation.
+Windows and Android are the native POS targets. Authorized cashiers can use checkout in a browser and claim a register for that browser profile. The current hosted web profile requires API availability. Windows production startup remains blocked until the [transport acceptance requirements](docs/adr/0001_windows_production_transport.md) are met. Hosted staging, recovery, signed installers, and physical till, scanner, printer, and cash-drawer checks remain release acceptance work. Linux, macOS, and iOS scaffolds are retained for evaluation.

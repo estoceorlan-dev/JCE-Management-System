@@ -86,7 +86,7 @@ void main() {
     },
   );
 
-  test('production web navigation excludes the POS route', () {
+  test('navigation omits POS when the platform disallows it', () {
     final session = _session({
       AppPermission.viewDashboard,
       AppPermission.processSales,

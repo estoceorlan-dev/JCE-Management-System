@@ -42,6 +42,7 @@ final shiftRepositoryProvider = Provider<ShiftRepository>((ref) {
 });
 
 final currentDeviceIdProvider = FutureProvider<String>((ref) {
+  ref.watch(authControllerProvider.select((state) => state.asData?.value));
   return ref.watch(deviceRegistrationRepositoryProvider).deviceId();
 });
 
@@ -59,7 +60,7 @@ final registerClaimRepositoryProvider = Provider<RegisterClaimRepository>((
 final registerClaimAuthorizationServiceProvider =
     Provider<RegisterClaimAuthorizationService>((ref) {
       return NodeRegisterClaimAuthorizationService(
-        ref.watch(nativeAuthApiProvider),
+        ref.watch(nativeApiSessionRepositoryProvider),
       );
     });
 

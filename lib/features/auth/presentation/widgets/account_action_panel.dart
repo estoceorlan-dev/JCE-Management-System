@@ -14,7 +14,7 @@ class _AccountActionPanelState extends ConsumerState<AccountActionPanel> {
   final _token = TextEditingController(),
       _password = TextEditingController(),
       _confirmation = TextEditingController();
-  var _recovery = false, _busy = false;
+  var _recovery = true, _busy = false;
   String? _message;
   @override
   void dispose() {
@@ -25,16 +25,19 @@ class _AccountActionPanelState extends ConsumerState<AccountActionPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => ExpansionTile(
-    title: const Text('Activate account or recover password'),
-    children: [
-      Form(
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Account help'),
+    scrollable: true,
+    content: SizedBox(
+      width: 360,
+      child: Form(
         key: _form,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             children: [
               DropdownButtonFormField<bool>(
+                isExpanded: true,
                 initialValue: _recovery,
                 items: const [
                   DropdownMenuItem(
@@ -101,6 +104,12 @@ class _AccountActionPanelState extends ConsumerState<AccountActionPanel> {
             ],
           ),
         ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: _busy ? null : () => Navigator.of(context).pop(),
+        child: const Text('Close'),
       ),
     ],
   );

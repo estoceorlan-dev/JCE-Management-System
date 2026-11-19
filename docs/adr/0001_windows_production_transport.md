@@ -15,7 +15,7 @@ or authorize removal of the production gate.
 
 Configuration validation and startup reject `JCE_ENV=production` on Windows.
 Development and staging remain available for integration, installation, and
-hardware testing. Web administration keeps checkout disabled. Android production
+hardware testing. The Windows gate applies independently of online browser checkout. Android production
 candidates require their own signing, device, security, and recovery acceptance.
 
 Enable Windows production only through a superseding architecture decision backed

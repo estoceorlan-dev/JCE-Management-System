@@ -15,14 +15,14 @@ void main() {
       expect(policy.ensureSupported, returnsNormally);
     });
 
-    test('limits production web to the administration fallback', () {
+    test('allows online POS in web production', () {
       final policy = ProductionPlatformPolicy.forEnvironment(
         environment: AppEnvironment.production,
         platform: AppClientPlatform.web,
       );
 
       expect(policy.isSupported, isTrue);
-      expect(policy.allowsPointOfSale, isFalse);
+      expect(policy.allowsPointOfSale, isTrue);
     });
 
     test('fails closed for Windows production', () {

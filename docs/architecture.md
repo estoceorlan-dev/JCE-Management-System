@@ -1,6 +1,6 @@
 # Frontend architecture
 
-JCE is a feature-based Flutter application for native Windows/Android POS and web administration. The standalone [Node.js/PostgreSQL backend](https://github.com/estoceorlan-dev/JCE-Backend/blob/main/docs/architecture.md) owns authoritative transactions and identity. Native clients retain SQLite-first operation; the hosted web profile is online-only.
+JCE is a feature-based Flutter application for native Windows/Android POS and online web POS and administration. The standalone [Node.js/PostgreSQL backend](https://github.com/estoceorlan-dev/JCE-Backend/blob/main/docs/architecture.md) owns authoritative transactions and identity. Native clients retain SQLite-first operation; the hosted web profile is online-only.
 
 ## Layers and ownership
 
@@ -33,7 +33,7 @@ Native offline behavior uses previously enrolled device credentials and local da
 
 Native clients protect per-installation P-256 credentials using platform secure storage. Cashiers enroll a 6–12 digit PIN while the API is reachable. Offline authorization is device-bound, expiring, and limited to cashier operations. PIN lockout, clock checks, and online recovery apply; offline PINs do not authorize supervisor actions.
 
-Browser administration uses same-origin HTTPS, Secure HttpOnly cookies, and CSRF protection. Browser storage contains public metadata rather than native private keys, bearer credentials, PINs, or offline enrollments. Browser checkout is disabled.
+Browser administration uses same-origin HTTPS, Secure HttpOnly cookies, and CSRF protection. Browser storage contains public metadata rather than native private keys, bearer credentials, PINs, or offline enrollments. Browser checkout requires a live session and a registered browser profile for the selected branch.
 
 Public client profiles include the API origin, deployment UUID, organization code, and public verification keys. Database credentials and signing private keys remain on the server. Local native TLS may add an operator-verified public CA while retaining hostname, expiry, and certificate-chain validation.
 

@@ -1,10 +1,20 @@
 import 'dart:async';
 
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jce_pos/core/config/app_config.dart';
+import 'package:jce_pos/core/config/app_environment.dart';
+import 'package:jce_pos/core/config/production_platform_policy.dart';
+import 'package:jce_pos/core/database/app_database_config.dart';
+import 'package:jce_pos/core/database/database_provider.dart';
 import 'package:jce_pos/core/error/failure.dart';
 import 'package:jce_pos/core/error/failures.dart';
 import 'package:jce_pos/core/error/result.dart';
+import 'package:jce_pos/core/routing/app_route.dart';
+import 'package:jce_pos/core/routing/app_router.dart';
+import 'package:jce_pos/core/widgets/app_loading_overlay.dart';
 import 'package:jce_pos/features/auth/data/repositories/noop_auth_audit_repository.dart';
 import 'package:jce_pos/features/auth/domain/entities/auth_session.dart';
 import 'package:jce_pos/features/auth/domain/repositories/auth_audit_repository.dart';
@@ -21,6 +31,75 @@ import 'package:jce_pos/shared/models/permission.dart';
 import 'package:jce_pos/shared/models/user_account_status.dart';
 
 void main() {
+  for (final restored in [false, true]) {
+    testWidgets(
+      'POS-only browser ${restored ? "session restore" : "login"} opens checkout',
+      (tester) async {
+        final cashier = _session({AppPermission.processSales});
+        final repository = _FakeAuthRepository(
+          initial: restored ? cashier : null,
+          refreshed: cashier,
+        );
+        addTearDown(repository.dispose);
+        final container = ProviderContainer(
+          overrides: [
+            appDatabaseConfigProvider.overrideWithValue(
+              AppDatabaseConfig(executor: NativeDatabase.memory()),
+            ),
+            appConfigProvider.overrideWithValue(
+              const AppConfig(
+                environment: AppEnvironment.development,
+                enableDemoAuth: true,
+                enableDiagnostics: false,
+                demoBranchId: 'branch',
+              ),
+            ),
+            productionPlatformPolicyProvider.overrideWithValue(
+              ProductionPlatformPolicy.forEnvironment(
+                environment: AppEnvironment.production,
+                platform: AppClientPlatform.web,
+              ),
+            ),
+            launchRouteProvider.overrideWithValue(AppRoute.pos.path),
+            authRepositoryProvider.overrideWithValue(repository),
+            authAuditRepositoryProvider.overrideWithValue(
+              const NoopAuthAuditRepository(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp.router(
+              routerConfig: container.read(appRouterProvider),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (!restored) {
+          await tester.enterText(
+            find.byType(TextFormField).first,
+            cashier.user.email,
+          );
+          await tester.enterText(find.byType(TextFormField).last, 'password');
+          await tester.ensureVisible(find.text('Login'));
+          await tester.tap(find.text('Login'));
+          await tester.pumpAndSettle();
+        }
+
+        expect(container.read(authControllerProvider).requireValue, cashier);
+        expect(
+          container.read(appRouterProvider).state.uri.path,
+          AppRoute.pos.path,
+        );
+        expect(find.byType(AppLoadingOverlay), findsNothing);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+      },
+    );
+  }
+
   test(
     'restores an authenticated session from the repository stream',
     () async {
@@ -167,7 +246,7 @@ class _FakeAuthRepository implements AuthRepository {
   Future<Result<AuthSession, Failure>> signInWithEmailAndPassword({
     required String email,
     required String password,
-  }) async => Result<AuthSession, Failure>.success(initial!);
+  }) async => Result<AuthSession, Failure>.success(refreshed!);
 
   @override
   Future<Result<void, Failure>> signOut() async =>

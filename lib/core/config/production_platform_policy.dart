@@ -9,13 +9,6 @@ enum AppClientPlatform { web, android, windows, ios, macos, linux, other }
 final productionPlatformPolicyProvider = Provider<ProductionPlatformPolicy>((
   ref,
 ) {
-  if (kIsWeb) {
-    return const ProductionPlatformPolicy(
-      platform: AppClientPlatform.web,
-      isSupported: true,
-      allowsPointOfSale: false,
-    );
-  }
   return ProductionPlatformPolicy.forEnvironment(
     environment: ref.watch(appConfigProvider).environment,
     platform: currentAppClientPlatform(),
@@ -55,15 +48,11 @@ class ProductionPlatformPolicy {
     }
 
     return switch (platform) {
-      AppClientPlatform.android => const ProductionPlatformPolicy(
-        platform: AppClientPlatform.android,
+      AppClientPlatform.android ||
+      AppClientPlatform.web => ProductionPlatformPolicy(
+        platform: platform,
         isSupported: true,
         allowsPointOfSale: true,
-      ),
-      AppClientPlatform.web => const ProductionPlatformPolicy(
-        platform: AppClientPlatform.web,
-        isSupported: true,
-        allowsPointOfSale: false,
       ),
       AppClientPlatform.windows => const ProductionPlatformPolicy(
         platform: AppClientPlatform.windows,

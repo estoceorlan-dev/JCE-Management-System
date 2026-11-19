@@ -1,23 +1,23 @@
 import 'package:flutter/foundation.dart';
-import '../../../../core/config/app_config.dart';
-import '../widgets/offline_pin_panel.dart';
 import 'package:flutter/material.dart';
-import '../widgets/account_action_panel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/app_config.dart';
+import '../../../../core/config/production_platform_policy.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/error/result.dart';
-import '../../../../core/routing/app_route.dart';
+import '../../../../core/routing/app_navigation_item.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_loading_overlay.dart';
 import '../../../../core/widgets/app_split_layout.dart';
 import '../../../../core/widgets/app_translucent_card.dart';
 import '../controllers/auth_controller.dart';
 import '../theme/login_theme.dart';
+import '../widgets/account_action_panel.dart';
 import '../widgets/login_brand_header.dart';
 import '../widgets/login_form.dart';
+import '../widgets/offline_pin_panel.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -55,10 +55,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           : 'Your account access could not be resolved.',
     );
     final session = authState.asData?.value;
+    final platform = ref.watch(productionPlatformPolicyProvider);
+    final hasWorkspace =
+        session != null &&
+        navigationItemsForSession(
+          session,
+          allowPointOfSale: platform.allowsPointOfSale,
+        ).isNotEmpty;
     final isLoadingWorkspace =
-        _isSubmitting ||
-        authState.isLoading ||
-        (session != null && session.permissions.isNotEmpty);
+        _isSubmitting || authState.isLoading || hasWorkspace;
+    final accessMessage = session != null && !hasWorkspace
+        ? 'Your role has no workspace for this branch. Ask your administrator to check your access.'
+        : null;
 
     return Theme(
       data: theme,
@@ -84,24 +92,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         isSubmitting: isLoadingWorkspace,
                         obscurePassword: _obscurePassword,
                         errorMessage:
-                            _errorMessage ??
-                            authError ??
-                            (session != null && session.permissions.isEmpty
-                                ? 'This account currently has no permissions.'
-                                : null),
+                            _errorMessage ?? authError ?? accessMessage,
                         onSubmit: _submit,
                         onTogglePasswordVisibility: () {
                           setState(() {
                             _obscurePassword = !_obscurePassword;
                           });
                         },
-                        onForgotPassword: _showForgotPasswordMessage,
+                        onForgotPassword: _forgotPassword,
                       ),
-                      if ((!kIsWeb &&
-                          !ref.watch(appConfigProvider).enableDemoAuth))
+                      if (!kIsWeb &&
+                          !ref.watch(appConfigProvider).enableDemoAuth)
                         const OfflinePinPanel(),
-                      if (!ref.watch(appConfigProvider).enableDemoAuth)
-                        const AccountActionPanel(),
                     ],
                   ),
                 ),
@@ -136,7 +138,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _isSubmitting = true;
     });
 
-    var shouldResetSubmitting = true;
     try {
       final result = await ref
           .read(authControllerProvider.notifier)
@@ -149,13 +150,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
       switch (result) {
         case SuccessResult():
-          context.go(AppRoute.dashboard.path);
-          shouldResetSubmitting = false;
+          _passwordController.clear();
         case FailureResult(:final failure):
           setState(() => _errorMessage = failure.message);
       }
     } finally {
-      if (mounted && shouldResetSubmitting) {
+      if (mounted) {
         setState(() {
           _isSubmitting = false;
         });
@@ -163,7 +163,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  Future<void> _showForgotPasswordMessage() async {
+  Future<void> _forgotPassword() async {
+    if (!ref.read(appConfigProvider).enableDemoAuth) {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => const AccountActionPanel(),
+      );
+      return;
+    }
     final result = await ref
         .read(authControllerProvider.notifier)
         .sendPasswordResetEmail(_emailController.text);

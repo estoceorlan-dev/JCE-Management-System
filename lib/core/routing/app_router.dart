@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/branches/presentation/pages/branches_page.dart';
@@ -56,21 +55,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return isAuthRoute ? null : AppRoute.auth.path;
       }
 
-      if (isAuthRoute) {
-        return _firstAccessiblePath(session, platformPolicy);
-      }
+      final destinations = navigationItemsForSession(
+        session,
+        allowPointOfSale: platformPolicy.allowsPointOfSale,
+      );
+      final landingPath = destinations.firstOrNull?.route.path;
+      if (isAuthRoute) return landingPath;
 
       final route = _routeForLocation(state.matchedLocation);
-      final hasAccess =
-          route == null ||
-          (route.canAccess(session) &&
-              (platformPolicy.allowsPointOfSale || route != AppRoute.pos));
-
-      if (hasAccess) {
+      if (route == null || destinations.any((item) => item.route == route)) {
         return null;
       }
-      return _firstAccessiblePath(session, platformPolicy) ??
-          AppRoute.auth.path;
+      return landingPath ?? AppRoute.auth.path;
     },
     routes: [
       GoRoute(
@@ -136,19 +132,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   void refresh() => notifyListeners();
-}
-
-String? _firstAccessiblePath(
-  AuthSession session,
-  ProductionPlatformPolicy platformPolicy,
-) {
-  for (final item in appNavigationItems) {
-    if (item.route.canAccess(session) &&
-        (platformPolicy.allowsPointOfSale || item.route != AppRoute.pos)) {
-      return item.route.path;
-    }
-  }
-  return null;
 }
 
 AppRoute? _routeForLocation(String location) {

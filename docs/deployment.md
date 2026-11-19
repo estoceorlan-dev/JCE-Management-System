@@ -1,6 +1,6 @@
 # Client deployment
 
-Use Flutter 3.44.9 / Dart 3.12.2, matching CI and the locked dependencies. Windows and Android are native POS targets; web provides administration with checkout disabled. Hosted web production uses the online-only profile. A staging build does not approve a production release.
+Use Flutter 3.44.9 / Dart 3.12.2, matching CI and the locked dependencies. Windows and Android are native POS targets. Web supports online checkout and administration. Hosted web production uses the online-only profile. A staging build does not approve a production release.
 
 ## Prerequisites
 
@@ -46,7 +46,9 @@ Dart defines are public compiled data. Never include passwords, tokens, database
 
 Local HTTPS uses the operator-verified public Caddy root certificate. Native clients extend normal trusted roots and retain hostname/expiry verification; browsers use their own certificate trust. Keep API and hosting origins consistent for cookies and CSRF. Separate local and hosted deployments have separate identities and queues.
 
-## Hosted web administration
+## Hosted web POS and administration
+
+Deploy the API with `POST /v1/pos/browser-terminal` before publishing the matching web build. A cashier needs sales access for the branch and register-claim permission to claim an unassigned till. Sign in using the browser profile that will operate the till. Clearing its site cookies creates a new installation on the next sign-in.
 
 Follow the backend's [Vercel + Render + Neon runbook](https://github.com/estoceorlan-dev/JCE-Backend/blob/main/docs/vercel_neon.md) for the split hosted profile. Vercel builds and serves Flutter assets and proxies `/v1/*` and `/health/*` to Render. The routing secret stays in protected hosting configuration. The public API origin equals the browser origin.
 

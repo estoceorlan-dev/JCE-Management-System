@@ -74,7 +74,7 @@ repository's `docs/architecture.md`. Firebase runtime adapters are retired.
 Physical device and hosted acceptance remain required. Retain production platform
 gates; source cleanup does not authorize production or cloud resource deletion.
 
-Target clients are Windows and Android POS, with web administration. Offline
+Target clients are Windows and Android POS, with online web POS and administration. Offline
 cashier sign-in uses prior per-device PIN enrollment and expiring authorization.
 Product images are optional: missing images or storage failures must not block
 product creation, checkout, or core sync. Local storage and S3-compatible cloud

@@ -22,7 +22,9 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('Activate account or recover password'));
+      await tester.tap(find.text('Recover password'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Activate invited account').last);
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Set password'));
       await tester.tap(find.text('Set password'));

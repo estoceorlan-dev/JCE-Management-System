@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/error/failure.dart';
+import '../../../../core/error/failure_mapper.dart';
 import '../../../../core/error/result.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/backend_sync_service.dart';
@@ -10,6 +11,7 @@ import '../../../../shared/models/business_context.dart';
 import '../../domain/entities/cash_movement.dart';
 import '../../domain/entities/cash_shift.dart';
 import '../../domain/entities/register.dart';
+import '../../domain/entities/register_claim.dart';
 import '../providers/shift_providers.dart';
 
 final shiftMutationControllerProvider =
@@ -46,6 +48,7 @@ class ShiftMutationController extends AsyncNotifier<void> {
 
   Future<Result<void, Failure>> claimCurrentDevice(Register register) async {
     state = const AsyncLoading();
+    final session = ref.read(activeShiftSessionProvider);
     final deviceId = await ref.read(currentDeviceIdProvider.future);
     if (kIsWeb && !await ref.read(connectivityMonitorProvider).isConnected) {
       const result = Result<void, Failure>.failure(
@@ -55,50 +58,60 @@ class ShiftMutationController extends AsyncNotifier<void> {
       return result;
     }
     final result = await ref.read(claimRegisterUseCaseProvider)(
-      session: ref.read(activeShiftSessionProvider),
+      session: session,
       registerId: register.id,
       deviceId: deviceId,
       expectedVersion: register.version,
     );
-    if (kIsWeb && result.isSuccess) {
-      final value = result.valueOrNull!;
-      final session = ref.read(activeShiftSessionProvider)!;
-      final businessContext = BusinessContext(
-        organizationId: session.activeOrganizationId,
-        branchId: session.activeBranchId,
-        actorUserId: session.activeOrganization.appUserId,
+    var outcome = result.map<void>((_) {});
+    final claim = result.valueOrNull;
+    if (kIsWeb && session != null && claim != null) {
+      outcome = await _confirmBrowserClaim(
+        claim,
+        BusinessContext(
+          organizationId: session.activeOrganizationId,
+          branchId: session.activeBranchId,
+          actorUserId: session.activeOrganization.appUserId,
+        ),
       );
-      final syncResult = await ref
+    }
+    _finish(outcome);
+    return outcome;
+  }
+
+  Future<Result<void, Failure>> _confirmBrowserClaim(
+    RegisterClaim claim,
+    BusinessContext context,
+  ) async {
+    try {
+      await ref
           .read(backendSyncServiceProvider)
-          .synchronize(context: businessContext, trigger: SyncTrigger.manual);
+          .synchronize(context: context, trigger: SyncTrigger.manual);
       final confirmed = await ref
           .read(registerClaimRepositoryProvider)
-          .getInstallationClaim(context: businessContext, deviceId: deviceId);
-      if (syncResult.offline || confirmed?.status.name == 'provisional') {
-        await ref
-            .read(registerClaimRepositoryProvider)
-            .discardProvisionalClaim(claimId: value.id, deviceId: deviceId);
-        const failure = Result<void, Failure>.failure(
-          NetworkFailure(
-            'The server did not confirm this browser claim. No register was claimed.',
-          ),
-        );
-        _finish(failure);
-        return failure;
+          .getInstallationClaim(context: context, deviceId: claim.deviceId);
+      if (confirmed != null && confirmed.id == claim.id) {
+        if (confirmed.status == RegisterClaimStatus.rejected) {
+          return Result.failure(
+            ConflictFailure(
+              confirmed.rejectionMessage ??
+                  'Another installation claimed this register first.',
+            ),
+          );
+        }
+        if (confirmed.status == RegisterClaimStatus.accepted ||
+            confirmed.status == RegisterClaimStatus.resolved) {
+          return const Result.success(null);
+        }
       }
-      if (confirmed?.status.name == 'rejected') {
-        final failure = Result<void, Failure>.failure(
-          ConflictFailure(
-            confirmed?.rejectionMessage ??
-                'Another installation claimed this register first.',
-          ),
-        );
-        _finish(failure);
-        return failure;
-      }
+      return const Result.failure(
+        NetworkFailure(
+          'Register claim is awaiting server confirmation. Sync before opening a shift.',
+        ),
+      );
+    } catch (error, stack) {
+      return Result.failure(FailureMapper.fromException(error, stack));
     }
-    _finish(result);
-    return result.map((_) {});
   }
 
   Future<Result<String, Failure>> openShift(OpenShiftDraft draft) async {

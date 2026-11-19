@@ -18,6 +18,7 @@ class NodeActorEvidence implements OperationalAccessPolicy {
   final NativeInstallationStore installation;
   final OfflinePinRepository pins;
   String? _authorization;
+  String? _browserDeviceId;
   OfflineGrant? _offline;
   AuthSession? _session;
   int _generation = 0;
@@ -25,11 +26,15 @@ class NodeActorEvidence implements OperationalAccessPolicy {
   void clear() {
     _generation++;
     _authorization = null;
+    _browserDeviceId = null;
     _offline = null;
     _session = null;
   }
 
-  Future<void> activateOnline(AuthSession session) async {
+  Future<void> activateOnline(
+    AuthSession session, {
+    String? browserDeviceId,
+  }) async {
     clear();
     final generation = _generation;
     final token = transport.web
@@ -39,6 +44,7 @@ class NodeActorEvidence implements OperationalAccessPolicy {
       throw const AuthenticationFailure('The active cashier changed.');
     }
     _authorization = token;
+    _browserDeviceId = browserDeviceId;
     _session = session;
   }
 
@@ -140,7 +146,7 @@ class NodeActorEvidence implements OperationalAccessPolicy {
       'operationId': command.operationId,
       'organizationId': command.organizationId,
       'branchId': command.branchId,
-      'deviceId': device?.deviceId,
+      'deviceId': device?.deviceId ?? _browserDeviceId,
       'commandType': command.commandType,
       'aggregateType': command.aggregateType,
       'aggregateId': command.aggregateId,
