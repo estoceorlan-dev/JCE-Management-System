@@ -23,7 +23,13 @@ abstract final class AppTheme {
       seedColor: AppColors.brand,
       brightness: Brightness.dark,
       primary: const Color(0xFF60A5FA),
-      secondary: const Color(0xFF22D3EE),
+      onPrimary: const Color(0xFF08172E),
+      secondary: const Color(0xFFA4C8FF),
+      onSurface: const Color(0xFFF3F4F6),
+      onSurfaceVariant: AppColors.slate400,
+      outline: const Color(0xFF89919D),
+      outlineVariant: AppColors.darkBorder,
+      surfaceContainer: AppColors.darkPanel,
       surface: AppColors.darkSurface,
       error: const Color(0xFFF87171),
     ),
@@ -40,6 +46,19 @@ abstract final class AppTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       fontFamily: AppTypography.fontFamily,
+      iconTheme: IconThemeData(size: 20, color: colorScheme.onSurfaceVariant),
+      listTileTheme: const ListTileThemeData(dense: true),
+      dataTableTheme: const DataTableThemeData(
+        headingRowHeight: 44,
+        dataRowMinHeight: 44,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
+        ),
+      ),
       scaffoldBackgroundColor: isDark ? AppColors.slate900 : AppColors.slate50,
       textTheme: AppTypography.textTheme(brightness),
       appBarTheme: AppBarTheme(
@@ -68,6 +87,11 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
         fillColor: isDark ? AppColors.darkPanel : Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),

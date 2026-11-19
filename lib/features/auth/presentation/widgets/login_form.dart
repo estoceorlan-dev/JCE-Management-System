@@ -44,20 +44,10 @@ class LoginForm extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Welcome back',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
               'Sign in to your workspace',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: theme.textTheme.headlineMedium,
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             Text('Email', style: labelStyle),
             const SizedBox(height: AppSpacing.sm),
             Semantics(
@@ -72,7 +62,7 @@ class LoginForm extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'you@example.com',
                   fillColor: fieldFill,
-                  contentPadding: const EdgeInsets.all(AppSpacing.lg),
+                  contentPadding: const EdgeInsets.all(AppSpacing.md),
                 ),
                 validator: _validateEmail,
               ),
@@ -94,7 +84,7 @@ class LoginForm extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
                   fillColor: fieldFill,
-                  contentPadding: const EdgeInsets.all(AppSpacing.lg),
+                  contentPadding: const EdgeInsets.all(AppSpacing.md),
                   suffixIcon: IconButton(
                     tooltip: obscurePassword
                         ? 'Show password'

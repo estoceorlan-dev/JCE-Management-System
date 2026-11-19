@@ -38,18 +38,9 @@ class _BranchesPageState extends ConsumerState<BranchesPage> {
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Branches',
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    const Text(
-                      'Manage branch profiles and operational availability.',
-                    ),
-                  ],
+                child: Text(
+                  'Branches',
+                  style: Theme.of(context).textTheme.headlineLarge,
                 ),
               ),
               FilledButton.icon(

@@ -71,6 +71,23 @@ void main() {
     expect(find.text('POS'), findsWidgets);
     expect(find.text('Reports'), findsNothing);
 
+    await tester.tap(find.byTooltip('Switch to dark mode'));
+    await tester.pumpAndSettle();
+    expect(
+      Theme.of(
+        tester.element(find.byTooltip('Switch to light mode')),
+      ).brightness,
+      Brightness.dark,
+    );
+    await tester.tap(find.byTooltip('Switch to light mode'));
+    await tester.pumpAndSettle();
+    expect(
+      Theme.of(
+        tester.element(find.byTooltip('Switch to dark mode')),
+      ).brightness,
+      Brightness.light,
+    );
+
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
 

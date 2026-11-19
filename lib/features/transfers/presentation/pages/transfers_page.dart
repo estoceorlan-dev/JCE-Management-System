@@ -41,18 +41,9 @@ class TransfersPage extends ConsumerWidget {
                   children: [
                     SizedBox(
                       width: 560,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Stock transfers',
-                            style: Theme.of(context).textTheme.headlineLarge,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          const Text(
-                            'Branch custody, approval, shipment, receipt, discrepancies, and corrections — fully offline.',
-                          ),
-                        ],
+                      child: Text(
+                        'Stock transfers',
+                        style: Theme.of(context).textTheme.headlineLarge,
                       ),
                     ),
                     if (canConfigure)

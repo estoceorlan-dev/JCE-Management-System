@@ -14,11 +14,13 @@ class BranchSelector extends StatelessWidget {
     required this.session,
     required this.onSelected,
     this.maxWidth = 232,
+    this.compact = false,
   });
 
   final AuthSession session;
   final BranchSelectionCallback onSelected;
   final double maxWidth;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -57,44 +59,49 @@ class BranchSelector extends StatelessWidget {
       child: Semantics(
         button: true,
         label: 'Current branch: ${activeBranch.name}',
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.slate200,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.storefront_outlined,
-                    color: theme.colorScheme.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Flexible(
-                    child: Text(
-                      activeBranch.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge,
+        child: compact
+            ? const SizedBox.square(
+                dimension: 48,
+                child: Icon(Icons.storefront_outlined),
+              )
+            : ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.slate200,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
-                  const Icon(Icons.unfold_more, size: 18),
-                ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.storefront_outlined,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Flexible(
+                          child: Text(
+                            activeBranch.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Icon(Icons.unfold_more, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

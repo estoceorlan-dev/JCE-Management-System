@@ -7,14 +7,16 @@ class MetricTile extends StatelessWidget {
   const MetricTile({
     super.key,
     required this.title,
+    required this.width,
     required this.value,
-    required this.detail,
+    this.detail,
     required this.icon,
   });
 
+  final double width;
   final String title;
   final String value;
-  final String detail;
+  final String? detail;
   final IconData icon;
 
   @override
@@ -22,9 +24,10 @@ class MetricTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      child: SizedBox(
-        width: 250,
+    return SizedBox(
+      width: width,
+      child: Card(
+        margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -33,29 +36,27 @@ class MetricTile extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 28,
+                    height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
-                    child: Icon(icon, color: colorScheme.primary, size: 20),
+                    child: Icon(icon, color: colorScheme.primary, size: 16),
                   ),
-                  const Spacer(),
-                  Icon(
-                    Icons.trending_up,
-                    size: 18,
-                    color: colorScheme.secondary,
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(title, style: theme.textTheme.titleMedium),
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(title, style: theme.textTheme.labelMedium),
-              const SizedBox(height: AppSpacing.xs),
               Text(value, style: theme.textTheme.headlineMedium),
-              const SizedBox(height: AppSpacing.xs),
-              Text(detail, style: theme.textTheme.bodyMedium),
+              if (detail != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(detail!, style: theme.textTheme.bodySmall),
+              ],
             ],
           ),
         ),

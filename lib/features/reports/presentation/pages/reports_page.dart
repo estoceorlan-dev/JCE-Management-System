@@ -40,11 +40,6 @@ class ReportsPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Reports', style: theme.textTheme.headlineLarge),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Offline operational reporting from synchronized local data.',
-                  style: theme.textTheme.bodyMedium,
-                ),
                 const SizedBox(height: AppSpacing.xl),
                 _ReportFilters(filter: filter, options: options),
                 const SizedBox(height: AppSpacing.xl),

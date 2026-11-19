@@ -52,18 +52,9 @@ class _PurchasesPageState extends ConsumerState<PurchasesPage> {
                   children: [
                     SizedBox(
                       width: 560,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Purchasing & receiving',
-                            style: Theme.of(context).textTheme.headlineLarge,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          const Text(
-                            'Supplier records, approval-ready purchase orders, partial receipts, and weighted-average costs — fully offline.',
-                          ),
-                        ],
+                      child: Text(
+                        'Purchasing & receiving',
+                        style: Theme.of(context).textTheme.headlineLarge,
                       ),
                     ),
                     if (_view == _PurchaseView.suppliers)

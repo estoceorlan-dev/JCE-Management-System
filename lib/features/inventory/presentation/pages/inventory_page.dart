@@ -203,18 +203,9 @@ class _InventoryHeader extends StatelessWidget {
       children: [
         SizedBox(
           width: 500,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Inventory',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              const Text(
-                'Branch stock balances derived from an immutable offline ledger.',
-              ),
-            ],
+          child: Text(
+            'Inventory',
+            style: Theme.of(context).textTheme.headlineLarge,
           ),
         ),
         OutlinedButton.icon(

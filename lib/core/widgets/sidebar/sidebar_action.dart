@@ -38,10 +38,12 @@ class SidebarAction extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadii.md),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
+              vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
               color: selected
@@ -50,10 +52,10 @@ class SidebarAction extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: compact
-                ? Center(child: Icon(icon, color: foregroundColor, size: 24))
+                ? Center(child: Icon(icon, color: foregroundColor, size: 20))
                 : Row(
                     children: [
-                      Icon(icon, color: foregroundColor, size: 24),
+                      Icon(icon, color: foregroundColor, size: 20),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Text(

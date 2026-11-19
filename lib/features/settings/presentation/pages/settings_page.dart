@@ -42,11 +42,6 @@ class SettingsPage extends ConsumerWidget {
                   'Operational settings',
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Organization defaults and branch overrides are cached locally for offline operation.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
                 const SizedBox(height: AppSpacing.xl),
                 _ActiveBranchCard(
                   organizationName:

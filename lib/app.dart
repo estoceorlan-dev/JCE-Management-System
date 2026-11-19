@@ -6,6 +6,7 @@ import 'core/constants/app_constants.dart';
 import 'core/routing/app_router.dart';
 import 'core/sync/sync_lifecycle_listener.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'core/widgets/environment_banner.dart';
 import 'core/widgets/online_required_gate.dart';
 import 'features/hardware/presentation/widgets/receipt_print_lifecycle_listener.dart';
@@ -23,7 +24,10 @@ class JcePosApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ref.watch(themeModeProvider),
+      themeAnimationDuration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 180),
       routerConfig: router,
       builder: (context, child) => EnvironmentBanner(
         environment: environment,

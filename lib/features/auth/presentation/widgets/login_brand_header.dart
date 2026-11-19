@@ -8,7 +8,7 @@ class LoginBrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -28,8 +28,8 @@ class LoginBrandHeader extends StatelessWidget {
         child: ClipOval(
           child: Image.asset(
             logoAsset,
-            width: 72,
-            height: 72,
+            width: 56,
+            height: 56,
             fit: BoxFit.cover,
             semanticLabel: 'JCE logo',
           ),

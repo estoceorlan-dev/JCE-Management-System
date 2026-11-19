@@ -283,18 +283,9 @@ class _Header extends StatelessWidget {
       children: [
         SizedBox(
           width: 520,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Product catalog',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              const Text(
-                'Manage organization products, branch pricing, barcodes, and offline changes.',
-              ),
-            ],
+          child: Text(
+            'Product catalog',
+            style: Theme.of(context).textTheme.headlineLarge,
           ),
         ),
         OutlinedButton.icon(

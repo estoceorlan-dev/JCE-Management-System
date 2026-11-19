@@ -63,19 +63,9 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                     children: [
                       SizedBox(
                         width: 620,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Customers & loyalty',
-                              style: Theme.of(context).textTheme.headlineLarge,
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            const Text(
-                              'Offline customer lookup, purchase attribution, '
-                              'privacy workflows, and immutable loyalty history.',
-                            ),
-                          ],
+                        child: Text(
+                          'Customers & loyalty',
+                          style: Theme.of(context).textTheme.headlineLarge,
                         ),
                       ),
                       FilledButton.icon(

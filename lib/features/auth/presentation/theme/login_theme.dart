@@ -5,22 +5,18 @@ import '../../../../core/theme/app_radii.dart';
 /// Warm brand colors scoped to authentication, derived from the cover artwork.
 abstract final class LoginTheme {
   static ThemeData from(ThemeData base) {
-    final isDark = base.brightness == Brightness.dark;
-    final background = isDark
-        ? const Color(0xFF241C17)
-        : const Color(0xFFFFE9C9);
-    final text = isDark ? const Color(0xFFFFE9C9) : const Color(0xFF39271D);
-    final muted = isDark ? const Color(0xFFD3BDA7) : const Color(0xFF745B47);
+    if (base.brightness == Brightness.dark) return base;
+    const background = Color(0xFFFFE9C9);
+    const text = Color(0xFF39271D);
+    const muted = Color(0xFF745B47);
     final scheme = base.colorScheme.copyWith(
-      primary: isDark ? const Color(0xFFE4B28B) : const Color(0xFF784425),
-      onPrimary: isDark ? const Color(0xFF39271D) : const Color(0xFFFFF8EF),
-      surface: isDark ? const Color(0xFF30251E) : const Color(0xFFFFF6E9),
+      primary: const Color(0xFF784425),
+      onPrimary: const Color(0xFFFFF8EF),
+      surface: const Color(0xFFFFF6E9),
       onSurface: text,
       onSurfaceVariant: muted,
-      outline: isDark ? const Color(0xFF997A61) : const Color(0xFFB69B7E),
-      outlineVariant: isDark
-          ? const Color(0xFF604A39)
-          : const Color(0xFFDAC1A2),
+      outline: const Color(0xFFB69B7E),
+      outlineVariant: const Color(0xFFDAC1A2),
     );
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadii.lg),

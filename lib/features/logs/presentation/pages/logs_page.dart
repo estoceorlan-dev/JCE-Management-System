@@ -50,11 +50,6 @@ class _LogsPageState extends ConsumerState<LogsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Audit logs', style: theme.textTheme.headlineLarge),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Append-only operational history, available from the local cache while offline.',
-                  style: theme.textTheme.bodyMedium,
-                ),
                 const SizedBox(height: AppSpacing.xl),
                 _filters(filter),
                 const SizedBox(height: AppSpacing.xl),

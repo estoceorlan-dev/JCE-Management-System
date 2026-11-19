@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../shared/models/sync_state.dart';
-import '../constants/app_constants.dart';
+import 'theme_mode_button.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'branch_selector.dart';
@@ -37,14 +37,15 @@ class ShellTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final narrow = MediaQuery.sizeOf(context).width < 600;
 
     return Container(
-      height: isDesktop ? 72 : 64,
+      height: isDesktop ? 60 : 56,
       padding: EdgeInsets.symmetric(
         horizontal: isDesktop ? AppSpacing.xxl : AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.slate900 : AppColors.slate50,
+        color: theme.colorScheme.surface,
         border: Border(
           bottom: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.slate200,
@@ -58,39 +59,26 @@ class ShellTopBar extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
           ],
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isDesktop)
-                  Text(
-                    AppConstants.appName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium,
-                  ),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleLarge,
-                ),
-              ],
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleLarge,
             ),
           ),
-          if (onOfflinePin != null)
+          if (!narrow && onOfflinePin != null)
             IconButton(
               tooltip: 'Offline cashier PIN',
               onPressed: onOfflinePin,
               icon: const Icon(Icons.pin_outlined),
             ),
-          if (onSwitchCashier != null)
+          if (!narrow && onSwitchCashier != null)
             IconButton(
               tooltip: 'Switch cashier',
               onPressed: onSwitchCashier,
               icon: const Icon(Icons.switch_account_outlined),
             ),
-          const SizedBox(width: AppSpacing.sm),
+          const ThemeModeButton(),
           IconButton(
             tooltip: syncState?.message ?? 'Synchronize now',
             onPressed: syncState?.status == SyncStatus.syncing ? null : onSync,
@@ -110,15 +98,38 @@ class ShellTopBar extends StatelessWidget {
                   }),
           ),
           if (isDesktop) const SizedBox(width: AppSpacing.sm),
-          IconButton(
-            tooltip: 'Refresh access',
-            onPressed: onRefreshAccess,
-            icon: const Icon(Icons.refresh),
-          ),
+          if (narrow)
+            PopupMenuButton<VoidCallback>(
+              tooltip: 'More actions',
+              onSelected: (action) => action(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: onRefreshAccess,
+                  child: const Text('Refresh access'),
+                ),
+                if (onOfflinePin != null)
+                  PopupMenuItem(
+                    value: onOfflinePin,
+                    child: const Text('Offline cashier PIN'),
+                  ),
+                if (onSwitchCashier != null)
+                  PopupMenuItem(
+                    value: onSwitchCashier,
+                    child: const Text('Switch cashier'),
+                  ),
+              ],
+            )
+          else
+            IconButton(
+              tooltip: 'Refresh access',
+              onPressed: onRefreshAccess,
+              icon: const Icon(Icons.refresh),
+            ),
           if (isDesktop) const SizedBox(width: AppSpacing.sm),
           BranchSelector(
             key: const ValueKey('app-bar-branch-selector'),
             session: session,
+            compact: narrow,
             maxWidth: isDesktop ? 232 : 136,
             onSelected: onBranchSelected,
           ),
